@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../components/Navbar';
+import TopNavbar from '../components/TopNavbar';
 import Footer from '../components/Footer';
 import { motion } from 'framer-motion';
 import { Clock, CheckCircle, XCircle, ArrowRight, SkipForward } from 'lucide-react';
@@ -109,7 +109,7 @@ const AptitudeTest = () => {
   if (!testStarted) {
     return (
       <div className={`${darkMode ? 'bg-slate-950' : 'bg-white'} min-h-screen flex flex-col`}>
-        <Navbar darkMode={darkMode} setDarkMode={setDarkMode} />
+        <TopNavbar darkMode={darkMode} setDarkMode={setDarkMode} />
         
         <motion.section
           initial={{ opacity: 0 }}
@@ -175,7 +175,7 @@ const AptitudeTest = () => {
 
     return (
       <div className={`${darkMode ? 'bg-slate-950' : 'bg-white'} min-h-screen flex flex-col`}>
-        <Navbar darkMode={darkMode} setDarkMode={setDarkMode} />
+        <TopNavbar darkMode={darkMode} setDarkMode={setDarkMode} />
         
         <motion.section
           initial={{ opacity: 0 }}
@@ -265,7 +265,7 @@ const AptitudeTest = () => {
 
   return (
     <div className={`${darkMode ? 'bg-slate-950' : 'bg-white'} min-h-screen flex flex-col`}>
-      <Navbar darkMode={darkMode} setDarkMode={setDarkMode} />
+      <TopNavbar darkMode={darkMode} setDarkMode={setDarkMode} />
 
       <div className={`flex-1 py-8 px-4 ${darkMode ? 'bg-slate-900' : 'bg-gray-50'}`}>
         <div className="max-w-4xl mx-auto">

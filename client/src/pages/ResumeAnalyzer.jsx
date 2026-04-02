@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../components/Navbar';
+import TopNavbar from '../components/TopNavbar';
 import Footer from '../components/Footer';
 import { motion } from 'framer-motion';
 import { Upload, FileText, CheckCircle, AlertCircle, TrendingUp } from 'lucide-react';
@@ -80,13 +80,13 @@ const ResumeAnalyzer = () => {
   if (!analyzed) {
     return (
       <div className={`${darkMode ? 'bg-slate-950' : 'bg-white'} min-h-screen flex flex-col`}>
-        <Navbar darkMode={darkMode} setDarkMode={setDarkMode} />
+        <TopNavbar darkMode={darkMode} setDarkMode={setDarkMode} />
 
         <motion.section
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className={`flex-1 flex items-center justify-center py-20 px-4 ${
-            darkMode ? 'bg-gradient-to-br from-slate-900 to-slate-800' : 'bg-gradient-to-br from-blue-50 to-purple-50'
+            darkMode ? 'bg-linear-to-br from-slate-900 to-slate-800' : 'bg-linear-to-br from-blue-50 to-purple-50'
           }`}
         >
           <motion.div
@@ -148,7 +148,7 @@ const ResumeAnalyzer = () => {
               disabled={!file}
               className={`w-full py-3 rounded-lg font-bold mb-4 transition ${
                 file
-                  ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:shadow-lg'
+                  ? 'bg-linear-to-r from-blue-500 to-purple-600 text-white hover:shadow-lg'
                   : 'bg-gray-300 text-gray-500 cursor-not-allowed'
               }`}
             >
@@ -187,7 +187,7 @@ const ResumeAnalyzer = () => {
 
   return (
     <div className={`${darkMode ? 'bg-slate-950' : 'bg-white'} min-h-screen flex flex-col`}>
-      <Navbar darkMode={darkMode} setDarkMode={setDarkMode} />
+      <TopNavbar darkMode={darkMode} setDarkMode={setDarkMode} />
 
       <div className={`flex-1 py-12 px-4 ${darkMode ? 'bg-slate-900' : 'bg-gray-50'}`}>
         <div className="max-w-6xl mx-auto">
@@ -195,7 +195,7 @@ const ResumeAnalyzer = () => {
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className={`${darkMode ? 'bg-gradient-to-br from-slate-800 to-slate-700' : 'bg-gradient-to-br from-blue-500 to-purple-600'} rounded-2xl shadow-2xl p-8 mb-8 text-white`}
+            className={`${darkMode ? 'bg-linear-to-br from-slate-800 to-slate-700' : 'bg-linear-to-br from-blue-500 to-purple-600'} rounded-2xl shadow-2xl p-8 mb-8 text-white`}
           >
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
               <motion.div
@@ -275,7 +275,7 @@ const ResumeAnalyzer = () => {
                       initial={{ width: 0 }}
                       animate={{ width: `${item.score}%` }}
                       transition={{ delay: 0.3 + idx * 0.1, duration: 0.5 }}
-                      className={`h-full rounded-full bg-gradient-to-r ${
+                      className={`h-full rounded-full bg-linear-to-r ${
                         item.status === 'good'
                           ? 'from-green-500 to-green-600'
                           : 'from-orange-500 to-orange-600'
@@ -335,7 +335,7 @@ const ResumeAnalyzer = () => {
             </button>
 
             <button
-              className="bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition"
+              className="bg-linear-to-r from-blue-500 to-purple-600 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition"
             >
               Download Report
             </button>

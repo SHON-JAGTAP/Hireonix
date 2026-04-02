@@ -9,35 +9,41 @@ export const AppContextProvider = (props) => {
   axios.defaults.withCredentials = true;
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL
+console.log('🔧 AppContextProvider - backendUrl:', backendUrl)
+
 const [isLoggedIn, setIsLoggedIn] = useState(false)
 const [userData, setUserData] = useState(false)
 
-const getAuthState =async () => {
+const getAuthState = async () => {
   try {
-    const {data} = await axios.get(backendUrl + '/api/auth/is-auth')
-    if(data.success){
-       setIsLoggedIn(true)
-       getUserData()
+    const { data } = await axios.get(backendUrl + '/api/auth/is-auth', {
+      timeout: 5000
+    })
+    if (data.success) {
+      setIsLoggedIn(true)
+      getUserData()
     }
   } catch (error) {
-    toast.error(error.message)
+    // Silently fail if backend is offline - allow frontend to load
+    console.warn('⚠️ Backend offline. App loading in offline mode.')
   }
 }
 
+const getUserData = async () => {
+  try {
+    const { data } = await axios.get(backendUrl + '/api/user/data', {
+      timeout: 5000
+    })
+    data.success ? setUserData(data.userData) : toast.error(data.message)
+  } catch (error) {
+    // Silently fail if backend is offline
+    console.warn('⚠️ Could not fetch user data')
+  }
+}
 
- const getUserData = async () => {
-    try {
-      const {data} = await axios.get(backendUrl + '/api/user/data')
-      data.success ? setUserData(data.userData ): toast.error(data.message)
-
-    } catch (error) {
-      toast.error(error.message)
-    }
- }
-
-useEffect(()=>{ 
+useEffect(() => {
   getAuthState();
-},[])
+}, [])
 
   const value = {
      backendUrl,

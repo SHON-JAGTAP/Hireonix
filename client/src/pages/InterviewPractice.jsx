@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../components/Navbar';
+import TopNavbar from '../components/TopNavbar';
 import Footer from '../components/Footer';
 import { motion } from 'framer-motion';
 import { Mic2, Send, Phone, PhoneOff, MessageCircle, User, Zap } from 'lucide-react';
@@ -87,7 +87,7 @@ const InterviewPractice = () => {
   if (!interviewStarted) {
     return (
       <div className={`${darkMode ? 'bg-slate-950' : 'bg-white'} min-h-screen flex flex-col`}>
-        <Navbar darkMode={darkMode} setDarkMode={setDarkMode} />
+        <TopNavbar darkMode={darkMode} setDarkMode={setDarkMode} />
 
         <motion.section
           initial={{ opacity: 0 }}
@@ -205,7 +205,7 @@ const InterviewPractice = () => {
 
   return (
     <div className={`${darkMode ? 'bg-slate-950' : 'bg-white'} h-screen flex flex-col`}>
-      <Navbar darkMode={darkMode} setDarkMode={setDarkMode} />
+      <TopNavbar darkMode={darkMode} setDarkMode={setDarkMode} />
 
       <div className={`flex-1 flex flex-col overflow-hidden ${darkMode ? 'bg-slate-900' : 'bg-gray-50'}`}>
         {/* Interview Header */}
@@ -252,13 +252,13 @@ const InterviewPractice = () => {
                 }`}
               >
                 {message.sender === 'interviewer' ? (
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-white ${
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-white ${
                     darkMode ? 'bg-gradient-to-br from-blue-500 to-purple-600' : 'bg-gradient-to-br from-blue-500 to-purple-600'
                   }`}>
                     <User size={20} />
                   </div>
                 ) : (
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
                     darkMode ? 'bg-slate-700' : 'bg-white'
                   }`}>
                     👤

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../components/Navbar';
+import TopNavbar from '../components/TopNavbar';
 import Footer from '../components/Footer';
 import { motion } from 'framer-motion';
 import { Code2, Copy, Play, RotateCcw } from 'lucide-react';
@@ -59,7 +59,7 @@ const CodingTest = () => {
 
   return (
     <div className={`${darkMode ? 'bg-slate-950' : 'bg-white'} min-h-screen flex flex-col`}>
-      <Navbar darkMode={darkMode} setDarkMode={setDarkMode} />
+      <TopNavbar darkMode={darkMode} setDarkMode={setDarkMode} />
 
       <div className={`flex-1 py-8 px-4 ${darkMode ? 'bg-slate-900' : 'bg-gray-50'}`}>
         <div className="max-w-7xl mx-auto">
@@ -87,7 +87,7 @@ const CodingTest = () => {
                     }}
                     className={`w-full p-3 rounded-lg text-left transition ${
                       selectedProblem === idx
-                        ? 'bg-linear-to-r from-blue-500 to-purple-600 text-white'
+                        ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white'
                         : `${darkMode ? 'bg-slate-700 text-gray-300 hover:bg-slate-600' : 'bg-gray-100 hover:bg-gray-200'}`
                     }`}
                   >
@@ -188,7 +188,7 @@ const CodingTest = () => {
 
                 <button
                   onClick={runCode}
-                  className="mt-4 w-full bg-linear-to-r from-blue-500 to-purple-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover:shadow-lg transition"
+                  className="mt-4 w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover:shadow-lg transition"
                 >
                   <Play size={20} />
                   Run Code
