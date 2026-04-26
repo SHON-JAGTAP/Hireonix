@@ -8,7 +8,7 @@ import { Zap, Code2, FileText, Mic2, ArrowRight, CheckCircle } from 'lucide-reac
 import { AppContent } from '../context/AppContext';
 
 const Home = () => {
-  const [darkMode, setDarkMode] = useState(false);
+  const { darkMode, setDarkMode } = useContext(AppContent);
   const navigate = useNavigate();
   const { userData, isLoggedIn } = useContext(AppContent);
 

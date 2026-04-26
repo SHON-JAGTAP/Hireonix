@@ -9,14 +9,32 @@ import connectDB from './config/mongodb.js';
 
 const app = express();
 const PORT = process.env.PORT || 4000
-const allowedOrigins =['http://localhost:5173', 'http://localhost:5174']
-
-console.log('Starting server...');
-console.log('Backend URL configured:', process.env.MONGODB_URL ? 'Yes' : 'No');
+const allowedOrigins = [
+  process.env.FRONTEND_URL,       // production URL from .env
+  /^http:\/\/localhost:\d+$/,     // any localhost port in development
+]
 
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({ origin: allowedOrigins, credentials: true}));
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, Postman, curl)
+    if (!origin) return callback(null, true)
+    
+    const isAllowed = allowedOrigins.some(allowed => {
+      if (!allowed) return false
+      if (allowed instanceof RegExp) return allowed.test(origin)
+      return allowed === origin
+    })
+
+    if (isAllowed) {
+      callback(null, true)
+    } else {
+      callback(new Error(`CORS blocked: ${origin}`))
+    }
+  },
+  credentials: true
+}));
 
 // API Endpoints
 app.get('/', (req, res) => res.send('API Working '));

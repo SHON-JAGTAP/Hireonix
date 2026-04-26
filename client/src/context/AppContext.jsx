@@ -9,10 +9,30 @@ export const AppContextProvider = (props) => {
   axios.defaults.withCredentials = true;
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL
-console.log('🔧 AppContextProvider - backendUrl:', backendUrl)
 
 const [isLoggedIn, setIsLoggedIn] = useState(false)
 const [userData, setUserData] = useState(false)
+const [authLoading, setAuthLoading] = useState(true);
+
+// Night / Light mode global state
+const [darkMode, setDarkMode] = useState(() => {
+  return localStorage.getItem('hireonix_theme') === 'dark';
+});
+
+const toggleTheme = (val) => {
+  const isDark = typeof val === 'boolean' ? val : !darkMode;
+  setDarkMode(isDark);
+  localStorage.setItem('hireonix_theme', isDark ? 'dark' : 'light');
+  
+  // Optional: apply class to body
+  if (isDark) document.documentElement.classList.add('dark');
+  else document.documentElement.classList.remove('dark');
+};
+
+useEffect(() => {
+  if (darkMode) document.documentElement.classList.add('dark');
+  else document.documentElement.classList.remove('dark');
+}, [darkMode]);
 
 const getAuthState = async () => {
   try {
@@ -21,11 +41,12 @@ const getAuthState = async () => {
     })
     if (data.success) {
       setIsLoggedIn(true)
-      getUserData()
+      await getUserData()
     }
   } catch (error) {
-    // Silently fail if backend is offline - allow frontend to load
-    console.warn('⚠️ Backend offline. App loading in offline mode.')
+    console.warn('⚠️ Backend offline or not authenticated.')
+  } finally {
+    setAuthLoading(false);
   }
 }
 
@@ -46,11 +67,12 @@ useEffect(() => {
 }, [])
 
   const value = {
-     backendUrl,
+      backendUrl,
       isLoggedIn, setIsLoggedIn,
       userData, setUserData,
-      getUserData
-
+      getUserData,
+      authLoading,
+      darkMode, setDarkMode: toggleTheme
   }
 
   return (

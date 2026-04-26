@@ -14,7 +14,7 @@ const ProfilePage = () => {
         <div className="bg-white rounded-lg shadow p-8">
           {/* Profile Header */}
           <div className="flex items-center gap-6 mb-8 pb-8 border-b">
-            <div className="w-24 h-24 flex items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-4xl">
+            <div className="w-24 h-24 flex items-center justify-center rounded-full bg-linear-to-br from-blue-500 to-purple-600 text-white font-bold text-4xl">
               {userData?.name ? userData.name[0].toUpperCase() : 'U'}
             </div>
             <div>

@@ -1,74 +1,93 @@
-import React, { useState } from 'react';
+import { AppContent } from '../context/AppContext';
+import React, { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import TopNavbar from '../components/TopNavbar';
 import Footer from '../components/Footer';
 import { motion } from 'framer-motion';
-import { Upload, FileText, CheckCircle, AlertCircle, TrendingUp } from 'lucide-react';
+import { Upload, FileText, CheckCircle, AlertCircle, TrendingUp, Loader2, Briefcase } from 'lucide-react';
+import { useActivity } from '../context/ActivityContext';
+
+const JOB_ROLES = [
+  { id: 'swe',       label: 'Software Engineer',   skills: ['Data Structures', 'Algorithms', 'System Design', 'Git', 'APIs'] },
+  { id: 'frontend',  label: 'Frontend Developer',   skills: ['React', 'CSS', 'TypeScript', 'Webpack', 'Performance'] },
+  { id: 'fullstack', label: 'Full-Stack Developer', skills: ['Node.js', 'Databases', 'REST APIs', 'Docker', 'CI/CD'] },
+  { id: 'ml',        label: 'ML Engineer',          skills: ['Python', 'TensorFlow', 'Statistics', 'Data Wrangling', 'Model Deployment'] },
+  { id: 'devops',    label: 'DevOps Engineer',      skills: ['Docker', 'Kubernetes', 'CI/CD', 'AWS', 'Linux'] },
+];
+
+const AI_KEY = import.meta.env.VITE_GEMINI_API_KEY || '';
+
+const fallbackAnalysis = {
+  score: 78,
+  grade: 'B+',
+  feedback: [
+    { category: 'Format & Structure', score: 85, feedback: 'Well-organized resume with clear sections', status: 'good' },
+    { category: 'Content Quality', score: 72, feedback: 'Add more quantifiable achievements and metrics', status: 'warning' },
+    { category: 'Skills Section', score: 80, feedback: 'Good variety of technical skills listed', status: 'good' },
+    { category: 'Experience Description', score: 75, feedback: 'Use action verbs to strengthen descriptions', status: 'warning' },
+    { category: 'Keywords', score: 68, feedback: 'Add more industry-specific keywords for ATS optimization', status: 'warning' }
+  ],
+  suggestions: [
+    'Add measurable results to each achievement (e.g., "Increased sales by 25%")',
+    'Include relevant certifications and technical skills',
+    'Use action verbs like "Designed", "Implemented", "Led" instead of passive language',
+    'Optimize for ATS by using standard keywords from job descriptions',
+    'Ensure consistent formatting throughout the document'
+  ]
+};
+
+async function getAIResumeAnalysis(role, fileName) {
+  if (!AI_KEY) return fallbackAnalysis;
+  const prompt = `You are an expert technical recruiter and ATS system analyzing a candidate's resume (file: "${fileName}") for a "${role.label}" role. Evaluate the resume based on missing skills, formatting improvements, and suggestions based on this specific job role.
+Produce a realistic JSON response containing the analysis. Respond ONLY with valid JSON.
+Format:
+{
+  "score": <number 0-100>,
+  "grade": "<string like A, B+, C>",
+  "feedback": [
+    { "category": "<string>", "score": <number 0-100>, "feedback": "<string>", "status": "<good | warning | bad>" }
+  ],
+  "suggestions": [ "<string>", "<string>" ]
+}`;
+  try {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${AI_KEY}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+    });
+    const data = await res.json();
+    const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+    return JSON.parse(raw.replace(/```json|```/g, '').trim());
+  } catch {
+    return fallbackAnalysis; // Fallback if API fails
+  }
+}
 
 const ResumeAnalyzer = () => {
-  const [darkMode, setDarkMode] = useState(false);
+  const { darkMode, setDarkMode } = useContext(AppContent);
   const [file, setFile] = useState(null);
   const [analyzed, setAnalyzed] = useState(false);
+  const [analysisData, setAnalysisData] = useState(null);
   const [score, setScore] = useState(0);
+  const [selectedRole, setSelectedRole] = useState(JOB_ROLES[0]);
+  const [analyzing, setAnalyzing] = useState(false);
   const navigate = useNavigate();
-
-  const resumeAnalysis = {
-    score: 78,
-    grade: 'B+',
-    feedback: [
-      {
-        category: 'Format & Structure',
-        score: 85,
-        feedback: 'Well-organized resume with clear sections',
-        status: 'good'
-      },
-      {
-        category: 'Content Quality',
-        score: 72,
-        feedback: 'Add more quantifiable achievements and metrics',
-        status: 'warning'
-      },
-      {
-        category: 'Skills Section',
-        score: 80,
-        feedback: 'Good variety of technical skills listed',
-        status: 'good'
-      },
-      {
-        category: 'Experience Description',
-        score: 75,
-        feedback: 'Use action verbs to strengthen descriptions',
-        status: 'warning'
-      },
-      {
-        category: 'Keywords',
-        score: 68,
-        feedback: 'Add more industry-specific keywords for ATS optimization',
-        status: 'warning'
-      }
-    ],
-    suggestions: [
-      'Add measurable results to each achievement (e.g., "Increased sales by 25%")',
-      'Include relevant certifications and technical skills',
-      'Use action verbs like "Designed", "Implemented", "Led" instead of passive language',
-      'Optimize for ATS by using standard keywords from job descriptions',
-      'Ensure consistent formatting throughout the document',
-      'Add links to projects or portfolio'
-    ]
-  };
+  const { addActivity } = useActivity();
 
   const handleFileUpload = (e) => {
     const uploadedFile = e.target.files[0];
-    if (uploadedFile) {
-      setFile(uploadedFile);
-    }
+    if (uploadedFile) setFile(uploadedFile);
   };
 
-  const analyzeResume = () => {
-    if (file) {
-      setScore(resumeAnalysis.score);
-      setAnalyzed(true);
-    }
+  const analyzeResume = async () => {
+    if (!file) return;
+    setAnalyzing(true);
+    const result = await getAIResumeAnalysis(selectedRole, file.name);
+    setAnalysisData(result);
+    setScore(result.score || 0);
+    setAnalyzed(true);
+    setAnalyzing(false);
+    addActivity('resume', `Resume Analyzed — ${selectedRole.label}`, { score: result.score });
   };
 
   const resetAnalysis = () => {
@@ -97,9 +116,31 @@ const ResumeAnalyzer = () => {
             <h1 className={`text-4xl font-bold text-center mb-2 ${darkMode ? 'text-white' : 'text-slate-900'}`}>
               Resume Analyzer
             </h1>
-            <p className={`text-center mb-8 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-              Get instant feedback and improve your resume
+            <p className={`text-center mb-6 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+              Get instant feedback tailored to your target role
             </p>
+
+            {/* Role Selector */}
+            <div className="mb-6">
+              <label className={`block text-sm font-semibold mb-3 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                <Briefcase className="inline mr-1" size={14} /> Target Role
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {JOB_ROLES.map(r => (
+                  <button
+                    key={r.id}
+                    onClick={() => setSelectedRole(r)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition ${
+                      selectedRole.id === r.id
+                        ? 'border-blue-500 bg-blue-600 text-white'
+                        : darkMode ? 'border-slate-600 text-gray-300 hover:border-blue-400' : 'border-gray-300 text-gray-600 hover:border-blue-400'
+                    }`}
+                  >
+                    {r.label}
+                  </button>
+                ))}
+              </div>
+            </div>
 
             {/* Upload Area */}
             <motion.div
@@ -145,14 +186,14 @@ const ResumeAnalyzer = () => {
             <motion.button
               whileHover={{ scale: 1.02 }}
               onClick={analyzeResume}
-              disabled={!file}
-              className={`w-full py-3 rounded-lg font-bold mb-4 transition ${
-                file
+              disabled={!file || analyzing}
+              className={`w-full py-3 rounded-lg font-bold mb-4 transition flex items-center justify-center gap-2 ${
+                file && !analyzing
                   ? 'bg-linear-to-r from-blue-500 to-purple-600 text-white hover:shadow-lg'
                   : 'bg-gray-300 text-gray-500 cursor-not-allowed'
               }`}
             >
-              Analyze Resume
+              {analyzing ? <><Loader2 size={18} className="animate-spin" /> Analyzing…</> : 'Analyze Resume'}
             </motion.button>
 
             <button
@@ -212,7 +253,7 @@ const ResumeAnalyzer = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
               >
-                <p className="text-6xl font-bold mb-2">B+</p>
+                <p className="text-6xl font-bold mb-2">{analysisData?.grade || 'N/A'}</p>
                 <p className="text-blue-100">Grade</p>
               </motion.div>
 
@@ -239,7 +280,7 @@ const ResumeAnalyzer = () => {
                 Category Scores
               </h2>
 
-              {resumeAnalysis.feedback.map((item, idx) => (
+              {analysisData?.feedback.map((item, idx) => (
                 <motion.div
                   key={idx}
                   initial={{ x: -20, opacity: 0 }}
@@ -297,7 +338,7 @@ const ResumeAnalyzer = () => {
               </h3>
 
               <div className="space-y-4">
-                {resumeAnalysis.suggestions.map((suggestion, idx) => (
+                {analysisData?.suggestions.map((suggestion, idx) => (
                   <motion.div
                     key={idx}
                     initial={{ opacity: 0, x: 10 }}
