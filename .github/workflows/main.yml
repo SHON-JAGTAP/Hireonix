@@ -1,0 +1,48 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  build-and-test:
+    runs-on: self-hosted
+    env:
+      BACKEND_PORT: ${{ secrets.BACKEND_PORT || 4000 }}
+
+    steps:
+      # Step 1: Checkout the repository code
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Step 2: Log in to Docker Hub using token
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+
+      # Step 3: Set up Docker Buildx (helps with building containers)
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Step 4: Build the Docker images using docker-compose
+      - name: Build Docker Images
+        run: |
+          echo "Building client and server images..."
+          docker-compose build
+
+      # Step 5: Run containers in the background to ensure they start without crashing
+      - name: Test Container Startup
+        run: |
+          docker-compose up -d
+          echo "Waiting for containers to initialize..."
+          sleep 10
+          docker-compose ps
+
+      # Step 6: Tear down testing environment
+      - name: Stop Containers
+        if: always()
+        run: docker-compose down
