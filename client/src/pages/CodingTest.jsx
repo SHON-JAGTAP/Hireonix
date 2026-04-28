@@ -11,12 +11,12 @@ import { toast } from 'react-toastify';
 
 /* ── Language configs ── */
 const LANGUAGES = [
-  { id: 63,  name: 'JavaScript', monacoId: 'javascript', icon: '🟨', template: `// JavaScript\nfunction solution(input) {\n  // Write your solution here\n}\nconsole.log(solution());` },
-  { id: 71,  name: 'Python 3',   monacoId: 'python',     icon: '🐍', template: `# Python 3\ndef solution(input):\n    # Write your solution here\n    pass\n\nprint(solution(""))` },
-  { id: 62,  name: 'Java',       monacoId: 'java',        icon: '☕', template: `public class Solution {\n    public static void main(String[] args) {\n        // Write your solution here\n        System.out.println("Hello, World!");\n    }\n}` },
-  { id: 54,  name: 'C++',        monacoId: 'cpp',         icon: '⚡', template: `#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your solution here\n    cout << "Hello, World!" << endl;\n    return 0;\n}` },
-  { id: 50,  name: 'C',          monacoId: 'c',           icon: '🔧', template: `#include <stdio.h>\n\nint main() {\n    // Write your solution here\n    printf("Hello, World!\\n");\n    return 0;\n}` },
-  { id: 72,  name: 'Ruby',       monacoId: 'ruby',        icon: '💎', template: `# Ruby\ndef solution(input)\n  # Write your solution here\nend\n\nputs solution("")` },
+  { id: 'javascript', name: 'JavaScript', monacoId: 'javascript', icon: '🟨', template: `// JavaScript\nfunction solution(input) {\n  // Write your solution here\n}\nconsole.log(solution());` },
+  { id: 'python',     name: 'Python 3',   monacoId: 'python',     icon: '🐍', template: `# Python 3\ndef solution(input):\n    # Write your solution here\n    pass\n\nprint(solution(""))` },
+  { id: 'java',       name: 'Java',       monacoId: 'java',        icon: '☕', template: `public class Solution {\n    public static void main(String[] args) {\n        // Write your solution here\n        System.out.println("Hello, World!");\n    }\n}` },
+  { id: 'c++',        name: 'C++',        monacoId: 'cpp',         icon: '⚡', template: `#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your solution here\n    cout << "Hello, World!" << endl;\n    return 0;\n}` },
+  { id: 'c',          name: 'C',          monacoId: 'c',           icon: '🔧', template: `#include <stdio.h>\n\nint main() {\n    // Write your solution here\n    printf("Hello, World!\\n");\n    return 0;\n}` },
+  { id: 'ruby',       name: 'Ruby',       monacoId: 'ruby',        icon: '💎', template: `# Ruby\ndef solution(input)\n  # Write your solution here\nend\n\nputs solution("")` },
 ];
 
 /* ── Problem bank ── */
@@ -107,33 +107,54 @@ const DIFF_COLOR = {
   Hard:   'bg-red-100 text-red-700',
 };
 
-/* ── Judge0 execution (RapidAPI free tier) ── */
-/* User should add their key to client/.env as VITE_JUDGE0_API_KEY */
-const JUDGE0_KEY = import.meta.env.VITE_JUDGE0_API_KEY || '';
+/* ── Piston execution (emkc.org public API or self-hosted) ── */
+const PISTON_API_URL = import.meta.env.VITE_PISTON_API_URL || 'https://emkc.org/api/v2/piston/execute';
 
 async function executeCode(sourceCode, langId) {
-  if (!JUDGE0_KEY) {
-    // Demo mode: simulate execution without API key
-    await new Promise(r => setTimeout(r, 1200));
-    return {
-      status: { description: 'Demo Mode' },
-      stdout: '✅ Code looks good! (Demo mode — add VITE_JUDGE0_API_KEY to .env for real execution)\n',
-      stderr: null,
-      compile_output: null,
-      time: '0.05',
-      memory: 2048,
-    };
-  }
-  const submitRes = await fetch('https://judge0-ce.p.rapidapi.com/submissions?base64_encoded=false&wait=true', {
+  const submitRes = await fetch(PISTON_API_URL, {
     method: 'POST',
     headers: {
-      'content-type': 'application/json',
-      'X-RapidAPI-Key': JUDGE0_KEY,
-      'X-RapidAPI-Host': 'judge0-ce.p.rapidapi.com',
+      'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ source_code: sourceCode, language_id: langId, stdin: '' }),
+    body: JSON.stringify({
+      language: langId,
+      version: '*',
+      files: [{ content: sourceCode }],
+    }),
   });
-  return submitRes.json();
+  
+  const data = await submitRes.json();
+  
+  if (!submitRes.ok) {
+    if (data.message && data.message.includes('whitelist only')) {
+      throw new Error('Public API restricted. Please run Piston locally using Docker: docker run -p 2000:2000 ghcr.io/engineer-man/piston and set VITE_PISTON_API_URL=http://localhost:2000/api/v2/execute in your client/.env');
+    }
+    throw new Error(data.message || 'Execution failed');
+  }
+
+  // Format Piston response to match existing Judge0 structure
+  const isCompileError = data.compile && data.compile.code !== 0;
+  const isRuntimeError = data.run && data.run.code !== 0;
+  
+  let statusId = 3; // Accepted
+  let statusDesc = 'Accepted';
+  
+  if (isCompileError) {
+    statusId = 6;
+    statusDesc = 'Compilation Error';
+  } else if (isRuntimeError) {
+    statusId = 4; // Runtime Error
+    statusDesc = data.run?.signal ? `Runtime Error (${data.run.signal})` : 'Runtime Error';
+  }
+
+  return {
+    status: { id: statusId, description: statusDesc },
+    stdout: data.run?.stdout ?? null,
+    stderr: data.run?.stderr ?? null,
+    compile_output: data.compile?.stderr || data.compile?.stdout || null,
+    time: null,
+    memory: null,
+  };
 }
 
 const CodingTest = () => {

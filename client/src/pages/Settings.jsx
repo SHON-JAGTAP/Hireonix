@@ -1,8 +1,11 @@
 import React, { useState } from 'react'
 import MainLayout from '../components/MainLayout'
 import { Bell, Lock, Eye, Globe } from 'lucide-react'
+import { toast } from 'react-toastify'
+import { useNavigate } from 'react-router-dom'
 
 const Settings = () => {
+  const navigate = useNavigate()
   const [settings, setSettings] = useState({
     emailNotifications: true,
     pushNotifications: false,
@@ -12,6 +15,14 @@ const Settings = () => {
 
   const handleChange = (key, value) => {
     setSettings(prev => ({ ...prev, [key]: value }))
+    // Optional: show a toast immediately when toggling important settings
+    if (key === 'twoFactor') {
+      toast.info(`Two-Factor Authentication ${value ? 'enabled' : 'disabled'}`)
+    }
+  }
+
+  const handleSave = () => {
+    toast.success('Settings saved successfully');
   }
 
   return (
@@ -64,7 +75,10 @@ const Settings = () => {
                 />
                 <span className="text-gray-700">Two-Factor Authentication</span>
               </label>
-              <button className="mt-4 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium transition">
+              <button 
+                onClick={() => navigate('/reset-password')}
+                className="mt-4 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium transition"
+              >
                 Change Password
               </button>
             </div>
@@ -91,7 +105,7 @@ const Settings = () => {
           </div>
 
           {/* Save Button */}
-          <button className="w-full bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition">
+          <button onClick={handleSave} className="w-full bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition">
             Save Settings
           </button>
         </div>
