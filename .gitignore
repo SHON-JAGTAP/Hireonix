@@ -1,7 +1,12 @@
 # Ignore everything inside server and client node_modules and .env files
 node_modules/
 .env
-.env.*
+.env.local
+.env.development
+.env.development.local
+
+# Allow .env.production (no secrets, just public URLs)
+!.env.production
 
 # Build directories
 client/dist/
