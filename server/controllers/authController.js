@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import userModel from "../models/usermodel.js";
+import userModel from "../models/userModel.js";
 import transporter from "../config/nodemailer.js";
 import { EMAIL_VERIFY_TEMPLATE, PASSWORD_RESET_TEMPLATE } from "../config/emailTemplates.js";
 export const register = async (req, res) => {
@@ -36,13 +36,21 @@ try{
     
     //sending welcome email
      const mailOptions = {
-        from: process.env.SENDER_EMAIL,
+        from: process.env.SENDER_EMAIL || process.env.SMTP_EMAIL,
         to: email,
         subject: 'Welcome ',
         text: `Welcome to website. Your account has been  created with email id: ${email}.`
      }
 
-     await transporter.sendMail(mailOptions);
+     const smtpUser = process.env.SMTP_USER || process.env.SMTP_EMAIL;
+     const smtpPassword = process.env.SMTP_PASS || process.env.SMTP_PASSWORD;
+     const smtpConfigured = smtpUser && smtpPassword
+       && !smtpUser.includes('your_email')
+       && !smtpPassword.includes('your_app_password');
+
+     if (smtpConfigured) {
+       await transporter.sendMail(mailOptions);
+     }
 
      return res.json({success: true}) ;
 

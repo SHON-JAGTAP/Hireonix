@@ -10,7 +10,7 @@ const TestCard = ({ icon: Icon, title, description, stats, onClick, darkMode }) 
     >
       <motion.div
         whileHover={{ scale: 1.2, rotate: 10 }}
-        className="mb-4 inline-block p-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg"
+        className="mb-4 inline-block p-3 bg-linear-to-r from-blue-500 to-purple-600 rounded-lg"
       >
         <Icon className="text-white" size={32} />
       </motion.div>
