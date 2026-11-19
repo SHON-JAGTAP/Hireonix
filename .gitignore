@@ -1,27 +1,13 @@
-# Environment variables
-.env
-server/.env
-
-# Dependencies
+# Ignore everything inside server and client node_modules and .env files
 node_modules/
-package-lock.json
-yarn.lock
+.env
+.env.*
 
-# Build outputs
-dist/
-build/
-.vite/
+# Build directories
+client/dist/
 
-# IDE
+# OS/IDE Files
 .vscode/
 .idea/
-*.swp
-*.swo
-
-# OS
 .DS_Store
 Thumbs.db
-
-# Logs
-*.log
-npm-debug.log*

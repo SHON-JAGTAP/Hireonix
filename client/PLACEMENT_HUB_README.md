@@ -1,4 +1,4 @@
-# PlacementHub - Modern Placement Preparation Website
+# PlacementHub - Modern Placement Preparation Website For MIT-ADT Students.
 
 ## 🎯 Project Overview
 
@@ -297,4 +297,4 @@ For issues or suggestions, please contact the development team.
 
 ---
 
-**Built with ❤️ for students preparing for placements**
+**Built with ❤️. for students preparing for placements**
